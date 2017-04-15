@@ -24,13 +24,13 @@ The goals / steps of this project are the following:
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-###Writeup / README
+### Writeup / README
 
 The codes for the project includes two parts: one is for single images in which a few image examples are included. The other one is similar to the first one but is organized for video processing. The two codes are written in Jupyter Notebook located in "./Submission/Project 4_Single Image.ipynb" and  "./Submission/Project 4__Video.ipynb"
 
 The examples given in the following writeup and in the codes may not be the same, since different images are used.  
 
-###Camera Calibration
+### Camera Calibration
 
 The code for this step is contained in the **Camera Calibration** cell. 
 
@@ -42,14 +42,14 @@ I then used the output `objpts` and `imgpts` to compute the camera matrix `mtx` 
 
  ![Calibration5](./P4_Submission/Calibration5.jpg)
 
-###Pipeline (Single Images)
+### Pipeline (Single Images)
 
-####1. Distortion correction of road images
+#### 1. Distortion correction of road images
 
 I use the same method to undistort road images as I use for the chessboard. One example is shown below:
 
 ![road](./P4_Submission/road.jpg)
-####2. Creation of Binary Images
+#### 2. Creation of Binary Images
 
 I use a combination of shape-based feature (Sobel x gradient)  and color-based feature (S channel of HLS color space) of images to generate binary images (the codes are in **Define Thresholds** cell, and executed in the **Creation of Binary Images Using Thresholds** cell ). The outputs after threshold methods are shown below:
 
@@ -70,7 +70,7 @@ After combining the threshold methods, I filter the output image with a trapezoi
 
 
 
-####3. Perspective Transformation
+#### 3. Perspective Transformation
 
  After binary images is created, it needs to be converted to a bird-eyes view by perspective transformation.  The transformation matrix *M* is computed by `cv2.getPerspectiveTransform()` function with source and destination points. By switching the source and destination points, *Minv* is also computed. 
 
@@ -93,9 +93,9 @@ Another example of right turn:
 
 ![perspective tranformation_bi](./P4_Submission/perspective tranformation_bi.png)
 
-####4. Lane Line Detection Using Sliding Windows
+#### 4. Lane Line Detection Using Sliding Windows
 
-#####4.1 Single Images 
+##### 4.1 Single Images 
 
 After obtaining the bird-eyes view binary image I use sliding windows method to identify the lane line pixels.  The codes are in the **Lane Line Detection** cell. The procedures are in the following:
 
@@ -143,7 +143,7 @@ Sliding window method for each frame in a video is computationally intensity and
 
 When processing a video, the sliding window algorithm could fail to detect lane lines in some frames due to bad lightening, lack of lines or other issues. To improve the robustness of the algorithm, a smoothing technique is used. First, a class of lines which includes line information of last N frames is created, and updated each time new lines are detected by using the method `self.update()`. The class of left and right lane lines are defined separately. The line information includes number of buffer frames `self.buffer`, recent fitted positions of lines `self.recent_xfitted, `, recent fitting coefficients `self.recent_fit_coef`,  best fitted positions `self.bestx `, best fitting coefficient etc.. The best fitted position and fitting coefficients are the average of positions and coefficients of last N frames. After defining the line class, whenever no lines are detected in a video, stored best fitted positions are used as the current lane lines. In this way, bad frames are smoothed by averaging over last N frames. The codes for lines class portion is shown in **Lane Line Class** cell. 
 
-####5. Warping Back Detected Lane Area to Road Image
+#### 5. Warping Back Detected Lane Area to Road Image
 
 I implemented this step in **Warped Back** cell. I first fill the polygon defined by the detected left and right lane lines, and then did inverse perspective transformation with inverse transformation matrix `Minv` The function I used is `cv2.warpPerspective()` .  An example of my result on a test image is shown below:
 
@@ -151,17 +151,17 @@ I implemented this step in **Warped Back** cell. I first fill the polygon define
 
 ---
 
-###Pipeline (video)
+### Pipeline (video)
 
-####1. Provide a link to your final video output. Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### 1. Provide a link to your final video output. Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 I process the video using the codes in **Video Process** cell, and here's a [link to my video result](./P4_Submission/project_video_output.mp4)
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 - One issue I had when I implement the codes is defining the output image `out_img` for visualization.  I had to use (0 , 1, 0) t0 draw the searching window rather than  (0, 255,0) . After trail and error, I found two things went wrong. One is when I apply mask in **Region of Interest** cell. The `ignore_mask_color`should be set to 1 rather than 255 since I use binary images. The other one is when I define the 3D out_img. I should set the out_img to `uint8`. 
 - Another issue is converting the color space. I found that only when one wants to display the image using `plt.imshow()`,  the image needs to be converted back RBG, i.e. `plt.imshow(cv2.cvtColor(test1, cv2.COLOR_BGR2RGB))`. If we are processing a video. there is no need to change the color space. I presume some video functions do it implicitly. 
