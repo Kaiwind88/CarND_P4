@@ -1,4 +1,4 @@
-##Project 4  Advanced Lane Line Finding
+## Project 4  Advanced Lane Line Finding
 The goals / steps of this project are the following:
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
