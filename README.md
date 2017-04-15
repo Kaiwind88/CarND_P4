@@ -40,7 +40,7 @@ For "image points", I use `cv2.findChessboardCorners()` to find the coordinates 
 
 I then used the output `objpts` and `imgpts` to compute the camera matrix `mtx` and distortion coefficients `dist` using the `cv2.calibrateCamera()` function. Then, I save them to pickle file for later use, so that I do not need to compute them each time I do calibration. I only need to reload the saved pickle file. Next, I applied this distortion correction to the test image using the `cv2.undistort()` function with target image, `mtx` and `dist` and obtained this result:
 
-
+ ![Calibration5](./P4_Submission/Calibration5.jpg)
 
 ### Pipeline (Single Images)
 
@@ -48,10 +48,14 @@ I then used the output `objpts` and `imgpts` to compute the camera matrix `mtx` 
 
 I use the same method to undistort road images as I use for the chessboard. One example is shown below:
 
-
+![road](./P4_Submission/road.jpg)
 #### 2. Creation of Binary Images
 
 I use a combination of shape-based feature (Sobel x gradient)  and color-based feature (S channel of HLS color space) of images to generate binary images (the codes are in **Define Thresholds** cell, and executed in the **Creation of Binary Images Using Thresholds** cell ). The outputs after threshold methods are shown below:
+
+![Sobel_x_bi](./P4_Submission/Sobel_x_bi.png)
+
+![Color channel_s_bi](./P4_Submission/Color channel_s_bi.png)
 
 After combining the threshold methods, I filter the output image with a trapezoidal mask. The region of interest is shown in red dash lines in the image on the left, along with the masked binary image on the right. The mask is set larger than the real lane line region because the lane line region will extend when cars run into turns. The codes are in the **Define Region of Interest** cell.![Stacked_mask_bi](./P4_Submission/Stacked_mask_bi.png)
 
@@ -81,11 +85,13 @@ The code for the perspective transformation includes a function called `perspect
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-
+![perspective tranformation](./P4_Submission/perspective tranformation.png)
 
 Another example of right turn:
 
+![perspective tranformation_turn](./P4_Submission/perspective tranformation_turn.png)
 
+![perspective tranformation_bi](./P4_Submission/perspective tranformation_bi.png)
 
 #### 4. Lane Line Detection Using Sliding Windows
 
@@ -100,7 +106,7 @@ After obtaining the bird-eyes view binary image I use sliding windows method to 
 
 The sliding windows (green box) and detected line pixels of left (red color) and right (blue color) lane lines are shown in the figure below. The fitted curves are shown in yellow. 
 
-
+![Lane Line Pixels](./P4_Submission/Lane Line Pixels.png)
 
 ##### 4.2 Curvature and Offset Calculation
 
@@ -133,6 +139,7 @@ Only the lines that pass the above criteria can be considered as detected lines 
 
 Sliding window method for each frame in a video is computationally intensity and will limit the algorithm to real-time application. To improve the efficiency, we search in a margin around the previous line positions rather than blindly searching the whole image when we are able to detect the lane lines in the last frame. An example of the searching zone defined by the margins is shown below. The codes are in the **Skip Searching Window** cell.
 
+![Lane Line Searching Zone](./P4_Submission/Lane Line Searching Zone.png)
 
 When processing a video, the sliding window algorithm could fail to detect lane lines in some frames due to bad lightening, lack of lines or other issues. To improve the robustness of the algorithm, a smoothing technique is used. First, a class of lines which includes line information of last N frames is created, and updated each time new lines are detected by using the method `self.update()`. The class of left and right lane lines are defined separately. The line information includes number of buffer frames `self.buffer`, recent fitted positions of lines `self.recent_xfitted, `, recent fitting coefficients `self.recent_fit_coef`,  best fitted positions `self.bestx `, best fitting coefficient etc.. The best fitted position and fitting coefficients are the average of positions and coefficients of last N frames. After defining the line class, whenever no lines are detected in a video, stored best fitted positions are used as the current lane lines. In this way, bad frames are smoothed by averaging over last N frames. The codes for lines class portion is shown in **Lane Line Class** cell. 
 
@@ -140,6 +147,7 @@ When processing a video, the sliding window algorithm could fail to detect lane 
 
 I implemented this step in **Warped Back** cell. I first fill the polygon defined by the detected left and right lane lines, and then did inverse perspective transformation with inverse transformation matrix `Minv` The function I used is `cv2.warpPerspective()` .  An example of my result on a test image is shown below:
 
+![Detected lane line_right_turn22](./P4_Submission/Detected lane line_right_turn22.png)
 
 ---
 
@@ -147,7 +155,7 @@ I implemented this step in **Warped Back** cell. I first fill the polygon define
 
 #### 1. Provide a link to your final video output. Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-I process the video using the codes in **Video Process** cell.
+I process the video using the codes in **Video Process** cell, and here's a [link to my video result](./P4_Submission/project_video_output.mp4)
 
 ---
 
@@ -161,4 +169,3 @@ I process the video using the codes in **Video Process** cell.
 - For the video, the detected lines are inside in the real lane lines sometimes when the pavement changes color from black to light gray. The reason could be other color gradients close to the real lines. It could be avoid by defining an inner polygon mask, or add other thresholds. But I am not sure what the correct approach. I am looing forwards to some suggestions. 
 - Another question is how to increase the processing speed. 
 - Sometimes the left and right curvatures are much different, I am not sure how to improve it. 
-
